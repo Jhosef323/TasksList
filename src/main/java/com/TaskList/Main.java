@@ -1,6 +1,4 @@
 package com.TaskList;
-//ATUALIZAR PROJETO IMPORTANTE!!
-//ARQUIVO NÂO SALVANDO CORRETAMENTE!!
 
 import java.util.List;
 import java.util.Scanner;
