@@ -2,20 +2,24 @@ package com.TaskList;
 
 import java.util.*;
 
+import static com.TaskList.Task.Status.CONCLUIDA;
+import static com.TaskList.Task.Status.PENDENTE;
+
 public class TaskService {
     private static final String CAMINHO = "tasks.txt";
     private ArrayList<Task> tasks = new ArrayList<>();
-    private TaskRepository repo = new TaskRepository();
+    private final TaskRepository repo = new TaskRepository();
 
-    public TaskService(){
-        carregar();
-    }
     public void salva(){
        repo.salvar(this.tasks, CAMINHO);
     }
     public void carregar(){
         this.tasks = new ArrayList<>(repo.carregar(CAMINHO));
         System.out.println("Arquivo carregado com sucesso!");
+    }
+
+    public TaskService(){
+        carregar();
     }
     public void adicionarTask(String titulo, int id, Task.Prioridade prioridade){
         if (id <= 0){System.out.println("ID digitado invalido!"); return;}
@@ -45,35 +49,22 @@ public class TaskService {
     }
     public void ordenarPrioridade(){
         List<Task> t = tasks;
-        Collections.sort(t, new Comparator<Task>() {
-            @Override
-            public int compare(Task o1, Task o2) {
-                return Integer.compare(o2.getNivel().ordinal(), o1.getNivel().ordinal());
-            }
-        });
+        t.sort((o1, o2) -> Integer.compare(o2.getNivel().ordinal(), o1.getNivel().ordinal()));
     }
     public List<Task> listarTask() {
-        if (tasks.isEmpty()) {
-            System.out.println("Nenhuma tarefa cadastrada.");
-            return null;
-        }
-        ordenarPrioridade();
-        int i = 1;
-        for (Task t: tasks) {
-            System.out.println("Tarefa: " + i++);
-            System.out.println("Titulo: " + t.getTitulo());
-            System.out.println("ID: " + t.getId());
-            System.out.println("Prioridade: " + t.getNivel());
-            System.out.println("Status: " + t.getStat());
-        }
-        return null;
+        return new ArrayList<>(tasks);
     }
-    public void atualizarTask(String titulo, int id, Task.Prioridade prioridade, Task.Status status){
-        if (tasks.isEmpty()) {
-            System.out.println("Nenhuma tarefa cadastrada.");
-            return;
-        }
-        Task encontrada = null;
+
+    public Task buscarTask(int id){
+        return tasks.stream()
+                .filter(t -> t.getId() == id)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void editarTask(String titulo, int id, Task.Prioridade prioridade, Task.Status status){
+
+        Task encontrada = buscarTask(id);
 
         for (Task t : tasks){
             if(t.getId() == id) {
@@ -100,5 +91,38 @@ public class TaskService {
         System.out.println("Tarefa atualizada com sucesso!");
         salva();
     }
+    public void concluirTask(int id){
+        if(tasks.isEmpty()){
+            System.out.println("Nenhuma tarefa cadastrada.");
+            return;
+        }
 
+        Task procura = buscarTask(id);
+
+        for (Task t: tasks){
+            if(t.getId() == id){
+                procura = t;
+                break;
+            }
+        }
+
+        if (id <= 0){
+            System.out.println("Digite um ID valido!");
+            return;
+        }
+
+        if(procura == null){
+            System.out.println("Tarefa nao encontrada!");
+            return;
+        }
+        if(procura.getStat() == PENDENTE){
+            procura.setStat(CONCLUIDA);
+            System.out.println("Tarefa esta concluida!");
+            salva();
+        }else {
+            procura.setStat(PENDENTE);
+            System.out.println("Tarefa pendente!");
+            salva();
+        }
+    }
 }

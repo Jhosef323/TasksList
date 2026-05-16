@@ -1,6 +1,7 @@
 package com.TaskList;
 
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -11,29 +12,34 @@ public class TaskRepository {
     public void salvar(List<Task> tarefas, String caminho){
         try {
             List<String> linhas = new ArrayList<>();
-            linhas.add("\uFEFF");
             for (Task t: tarefas){
-            linhas.add(t.toString());}
+            linhas.add(t.toFileString());}
+
             Files.write(Path.of(caminho), linhas);
-            System.out.println("Arquivo salvo com sucesso!");
-        } catch (Exception e){
+            System.out.println("Salvo.");
+        } catch (IOException e){
             System.out.println("Erro ao salvar: " + e.getMessage());
         }
     }
     public List<Task> carregar(String caminho){
         List<Task> tarefas = new ArrayList<>();
+        Path path = Path.of(caminho);
         try{
-            if(!Files.exists(Path.of(caminho))){ return tarefas;}
-            List<String> linhas = Files.readAllLines(Path.of(caminho));
-            if (!linhas.isEmpty() && linhas.get(0).startsWith("\uFEFF")){
-                linhas.set(0, linhas.get(0).substring(1));
+            if(!Files.exists(path)){ return tarefas;}
+
+            List<String> linhas = Files.readAllLines(path);
+
+            if (!linhas.isEmpty() && linhas.getFirst().startsWith("\uFEFF")){
+                linhas.set(0, linhas.getFirst().substring(1));
             }
+
             for (String linha: linhas) {
-                String[] partes = linha.split("\\|", -1);
+                String[] partes = linha.split("\\|\\|", -1);
                 if (partes.length == 4) {
-                    int id = Integer.parseInt(partes[0]);
-                    String titulo = partes[1];
+                    String titulo = partes[0];
+
                     try {
+                        int id = Integer.parseInt(partes[1]);
                         Task.Prioridade nivel = Task.Prioridade.valueOf(partes[2]);
                         Task.Status stat = Task.Status.valueOf(partes[3]);
                         tarefas.add(new Task(titulo, id, nivel, stat));
@@ -42,7 +48,7 @@ public class TaskRepository {
                     }
                 }else {System.out.println("Linha ignorada (formato invalido)" + linha);}
             }
-        }catch (Exception e){
+        }catch (IOException | NumberFormatException e){
             System.out.println("Erro ao carregar: " + e.getMessage());
         }
         return tarefas;

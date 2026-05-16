@@ -1,6 +1,4 @@
 package com.TaskList;
-//ATUALIZAR PROJETO IMPORTANTE!!
-//ARQUIVO NÂO SALVANDO CORRETAMENTE!!
 
 import java.util.List;
 import java.util.Scanner;
@@ -12,7 +10,7 @@ public class Main {
     }
 
     private static int lerInt(Scanner entrada){
-        int valor = 0;
+        int valor;
         while(true){
             if (entrada.hasNextInt()) {
                 valor = entrada.nextInt();
@@ -37,13 +35,15 @@ public class Main {
 
         int op = lerInt(entrada);
 
-        switch (op){
-            case 0: return Task.Prioridade.ALTA;
-            case 1: return Task.Prioridade.MODERADA;
-            case 2: return Task.Prioridade.BAIXA;
-            default: System.out.println("Opcao invalida. Usando Baixa.");
-                return Task.Prioridade.BAIXA;
-        }
+        return switch (op) {
+            case 0 -> Task.Prioridade.ALTA;
+            case 1 -> Task.Prioridade.MODERADA;
+            case 2 -> Task.Prioridade.BAIXA;
+            default -> {
+                System.out.println("Opcao invalida. Usando Baixa.");
+                yield Task.Prioridade.BAIXA;
+            }
+        };
     }
 
     private static Task.Status escolherStatus(Scanner entrada){
@@ -53,11 +53,25 @@ public class Main {
 
         int op = lerInt(entrada);
 
-        switch (op){
-            case 0: return Task.Status.PENDENTE;
-            case 1: return Task.Status.CONCLUIDA;
-            default: System.out.println("Opcao invalida. Usando Pendente.");
-                return Task.Status.PENDENTE;
+        return switch (op) {
+            case 0 -> Task.Status.PENDENTE;
+            case 1 -> Task.Status.CONCLUIDA;
+            default -> {
+                System.out.println("Opcao invalida. Usando Pendente.");
+                yield Task.Status.PENDENTE;
+            }
+        };
+    }
+
+    public static void mostraTasks(TaskService service){
+        List<Task> task = service.listarTask();
+        if(task.isEmpty()){
+            System.out.println("Nenhuma tarefa cadastrada.");
+        }
+
+        int i = 1;
+        for (Task t: task){
+            System.out.println(i++ + ". " + t);
         }
     }
 
@@ -72,7 +86,9 @@ public class Main {
             System.out.println("[1] - Adicionar tarefa");
             System.out.println("[2] - Remover tarefa");
             System.out.println("[3] - Listar tarefas");
-            System.out.println("[4] - Editar tarefas");
+            System.out.println("[4] - Buscar tarefa por (ID)");
+            System.out.println("[5] - Editar tarefas");
+            System.out.println("[6] - Mudar estatus da tarefa");
             System.out.println("[0] - Sair");
             System.out.println("Escolha: ");
             opcao = lerInt(entrada);
@@ -104,10 +120,24 @@ public class Main {
                 case 3 -> {
                     limparTela();
                     System.out.println(" ==== LISTA DE TAREFAS ==== ");
-                    service.listarTask();
+                    service.ordenarPrioridade();
+                    mostraTasks(service);
                 }
 
                 case 4 -> {
+                    limparTela();
+                    System.out.println(" ==== BUSCAR TAREFA ==== ");
+                    System.out.println("Digite o id da tarefa: ");
+                    int id = lerInt(entrada);
+                    Task t = service.buscarTask(id);
+                    if(t == null){
+                        System.out.println("Task nao encontrada.");
+                    }else {
+                        System.out.println(t);
+                    }
+                }
+
+                case 5 -> {
                     limparTela();
                     System.out.println(" ==== EDITAR TAREFA ==== ");
                     System.out.println("ID da tarefa para editar: ");
@@ -122,7 +152,19 @@ public class Main {
                     System.out.println("Novo Status: ");
                     Task.Status s = escolherStatus(entrada);
 
-                    service.atualizarTask(titulo, id, p, s);
+                    service.editarTask(titulo, id, p, s);
+                }
+
+                case 6 -> {
+                    limparTela();
+                    System.out.println(" ==== MUDAR ESTATUS ==== ");
+                    System.out.println("Pendente -> Concluida");
+                    System.out.println("Concluida -> Pendente\n");
+
+                    System.out.println("Digite o ID da tarefa: ");
+                    int id = lerInt(entrada);
+
+                    service.concluirTask(id);
                 }
 
                 case 0 -> {
