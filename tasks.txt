@@ -1,4 +1,2 @@
-academia||21||ALTA||CONCLUIDA
-almoço||22||ALTA||PENDENTE
-desenhar||28||MODERADA||PENDENTE
-sair de casa||19||BAIXA||PENDENTE
+
+ID: 2 | Titulo: jho | Prioridade: Alta | Status: Pendente
