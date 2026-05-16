@@ -49,9 +49,6 @@ public class Task {
     public void setTitulo(String titulo){
         this.titulo = titulo;
     }
-    public String getTitulo(){
-        return titulo;
-    }
     public void setId(int id){
         this.id = id;
     }
